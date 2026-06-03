@@ -1,11 +1,11 @@
 Package: PacemakeR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: PacmakeR is an R package for analysing results and pacing strategies of marathon races.
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Julian", "Fischer",
+      email = "JT.Fischer@student.maastrichtuniversity.nl",
       role = c("aut", "cre")
     )
   )
