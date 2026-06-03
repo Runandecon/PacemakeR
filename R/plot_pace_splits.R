@@ -1,3 +1,15 @@
+format_pace_mmss <- function(sec) {
+  m <- sec %/% 60
+  s <- sec %% 60
+  sprintf("%02d:%02d", m, s)
+}
+
+format_percent_rel <- function(x) {
+  pct <- (x - 1) * 100
+  sprintf("%+d%%", round(pct))
+}
+
+
 #' Plot split pace for one or all runners
 #'
 #' @description
@@ -12,18 +24,6 @@
 #'
 #' @return A ggplot object.
 #' @export
-
-format_pace_mmss <- function(sec) {
-  m <- sec %/% 60
-  s <- sec %% 60
-  sprintf("%02d:%02d", m, s)
-}
-
-format_percent_rel <- function(x) {
-  pct <- (x - 1) * 100
-  sprintf("%+d%%", round(pct))
-}
-
 plot_pace_splits <- function(data, id = NULL, relative = NULL,
                              reference = "decimal") {
 
@@ -199,3 +199,4 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
     ) +
     ggplot2::theme_minimal(base_size = 14)
 }
+
