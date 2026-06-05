@@ -1,15 +1,3 @@
-format_pace_mmss <- function(sec) {
-  m <- sec %/% 60
-  s <- sec %% 60
-  sprintf("%02d:%02d", m, s)
-}
-
-format_percent_rel <- function(x) {
-  pct <- (x - 1) * 100
-  sprintf("%+d%%", round(pct))
-}
-
-
 #' Plot split pace for one or all runners
 #'
 #' @description
@@ -18,13 +6,13 @@ format_percent_rel <- function(x) {
 #'
 #' @param data A tidy data frame.
 #' @param id A Bib or Name. Use "ALL" to plot all runners.
-#' @param relative TRUE for relative to average pace, or numeric distance
-#'   to show pace relative to that split.
+#' @param distance TRUE for distance to average pace, or numeric distance
+#'   to show pace distance to that split.
 #' @param reference "decimal" (default), "pct"/"percentage", or "pace"
 #'
 #' @return A ggplot object.
 #' @export
-plot_pace_splits <- function(data, id = NULL, relative = NULL,
+plot_pace_splits <- function(data, id = NULL, distance = NULL,
                              reference = "decimal") {
 
   if (is.null(id)) {
@@ -40,77 +28,23 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
     stop("Data must contain a 'Bib' or 'Name' column.")
   }
 
-  # Filter if needed
-  if (id != "ALL") {
-    data <- data[data[[id_col]] == id, ]
-    if (nrow(data) == 0) stop("No matching runner found.")
-  }
+  # Core split table
+  data <- compute_split_table(data, id_col, id)
 
-  # Convert cumulative time
-  data$Time_sec <- as.numeric(hms::as_hms(data$Time))
+  # Relative pace handling
+  rel_info <- compute_relative_pace(data, distance)
+  rel_values <- rel_info$rel_values
+  ref_pace   <- rel_info$ref_pace
+  avg_pace   <- rel_info$avg_pace
 
-  # --- ADD START ROW TO PRESERVE 5K SPLIT ---
-  start_row <- data[1, ]
-  start_row$Distance <- 0
-  start_row$Time <- "00:00:00"
-  start_row$Time_sec <- 0
-
-  data <- rbind(start_row, data)
-  data <- data[order(data[[id_col]], data$Distance), ]
-
-  # Compute split time + split distance
-  data$SplitTime <- c(NA, diff(data$Time_sec))
-  data$SplitDist <- c(NA, diff(data$Distance))
-
-  # Pace per km
-  data$Pace_sec_per_km <- data$SplitTime / data$SplitDist
-
-  # Remove first NA row
-  data <- data[!is.na(data$Pace_sec_per_km), ]
-
-  # ---------------------------
-  # RELATIVE OPTION
-  # ---------------------------
-
-  dashed_line <- NULL   # default: no line
-
-  if (is.logical(relative) && relative == TRUE) {
-
-    finish_time <- max(data$Time_sec)
-    avg_pace <- finish_time / 42.195
-
-    # Higher = faster
-    rel_values <- avg_pace / data$Pace_sec_per_km
-
-    rel_label <- "Relative Pace (vs average)"
-
-  } else if (is.numeric(relative)) {
-
-    if (!(relative %in% data$Distance)) {
-      stop(paste0("Reference distance ", relative, " km not found in data."))
-    }
-
-    ref_pace <- data$Pace_sec_per_km[data$Distance == relative][1]
-
-    rel_values <- ref_pace / data$Pace_sec_per_km
-
-    rel_label <- paste0("Relative Pace (ref = ", relative, " km)")
-
-  } else {
-
-    # No relative mode → normal split pace
-    rel_values <- NULL
-  }
-
-  # ---------------------------
-  # REFERENCE FORMAT HANDLING
-  # ---------------------------
+  dashed_line <- NULL
+  y_label <- "Split Pace (mm:ss per km)"
+  y_format <- format_pace_mmss
 
   if (!is.null(rel_values)) {
 
-    # Always show dashed line at 1 (baseline)
     dashed_line <- ggplot2::geom_hline(
-      yintercept = 1,
+      yintercept = if (!is.na(avg_pace)) 1 else 1,
       linetype = "dashed",
       color = "red"
     )
@@ -118,42 +52,37 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
     if (reference %in% c("pct", "percentage")) {
 
       data$PlotValue <- rel_values
-      y_label <- "Relative Pace (%)"
+      y_label <- "distance Pace (%)"
       y_format <- format_percent_rel
 
     } else if (reference == "pace") {
 
-      # Convert relative pace back into mm:ss pace
-      # pace_rel = ref_pace / pace → pace = ref_pace / pace_rel
-      if (is.logical(relative) && relative == TRUE) {
-        finish_time <- max(data$Time_sec)
-        avg_pace <- finish_time / 42.195
+      if (!is.na(avg_pace) && is.logical(distance) && distance) {
         data$PlotValue <- avg_pace / rel_values
+        ref_line <- avg_pace
       } else {
         data$PlotValue <- ref_pace / rel_values
+        ref_line <- ref_pace
       }
 
-      y_label <- "Relative Pace (mm:ss)"
+      y_label <- "distance Pace (mm:ss)"
       y_format <- format_pace_mmss
 
-      # dashed line at reference pace
       dashed_line <- ggplot2::geom_hline(
-        yintercept = if (is.logical(relative) && relative == TRUE) avg_pace else ref_pace,
+        yintercept = ref_line,
         linetype = "dashed",
         color = "red"
       )
 
     } else {
 
-      # Default: decimal
       data$PlotValue <- rel_values
-      y_label <- "Relative Pace (ratio)"
+      y_label <- "distance Pace (ratio)"
       y_format <- scales::number_format(accuracy = 0.01)
     }
 
   } else {
 
-    # Normal split pace mode
     data$PlotValue <- data$Pace_sec_per_km
     y_label <- "Split Pace (mm:ss per km)"
     y_format <- format_pace_mmss
@@ -162,6 +91,14 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
   # Extract Name + Bib for title
   runner_name <- if ("Name" %in% names(data)) unique(data$Name)[1] else NA
   runner_bib  <- if ("Bib"  %in% names(data)) unique(data$Bib)[1]  else NA
+
+  rel_label <- if (is.logical(distance) && distance) {
+    "distance Pace (vs average)"
+  } else if (is.numeric(distance)) {
+    paste0("distance Pace (ref = ", distance, " km)")
+  } else {
+    "Split Pace"
+  }
 
   plot_title <- if (id == "ALL") {
     if (is.null(rel_values)) "Split Pace for All Runners"
@@ -173,10 +110,6 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
       paste0(rel_label, " of ", runner_name, " (", runner_bib, ")")
     }
   }
-
-  # ---------------------------
-  # PLOT
-  # ---------------------------
 
   ggplot2::ggplot(
     data,
@@ -199,4 +132,3 @@ plot_pace_splits <- function(data, id = NULL, relative = NULL,
     ) +
     ggplot2::theme_minimal(base_size = 14)
 }
-

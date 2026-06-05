@@ -4,15 +4,15 @@
 \alias{plot_pace_splits}
 \title{Plot split pace for one or all runners}
 \usage{
-plot_pace_splits(data, id = NULL, relative = NULL, reference = "decimal")
+plot_pace_splits(data, id = NULL, distance = NULL, reference = "decimal")
 }
 \arguments{
 \item{data}{A tidy data frame.}
 
 \item{id}{A Bib or Name. Use "ALL" to plot all runners.}
 
-\item{relative}{TRUE for relative to average pace, or numeric distance
-to show pace relative to that split.}
+\item{distance}{TRUE for distance to average pace, or numeric distance
+to show pace distance to that split.}
 
 \item{reference}{"decimal" (default), "pct"/"percentage", or "pace"}
 }

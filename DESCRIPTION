@@ -1,6 +1,6 @@
 Package: PacemakeR
 Type: Package
-Title: PacemakeR is an R package for analysing results and pacing strategies of marathon races.
+Title: PacemakeR is an R package for analysing results and pacing strategies of marathon races
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -17,3 +17,11 @@ LazyData: true
 URL: https://github.com/Runandecon/PacemakeR
 BugReports: https://github.com/Runandecon/PacemakeR/issues
 RoxygenNote: 7.3.3
+Imports:
+    dplyr,
+    ggplot2,
+    hms,
+    scales,
+    tibble,
+    stats
+Config/build/clean-inst-doc: false

@@ -14,84 +14,35 @@
 #' @export
 marathon_summary <- function(data, distance = "finish", pace = FALSE, plot = FALSE) {
 
-  # --- Validate columns ---
   if (!all(c("Distance", "Time") %in% names(data))) {
     stop("Data must contain 'Distance' and 'Time' columns.")
   }
 
   # --- Select rows based on distance ---
   if (identical(distance, "finish")) {
-
-    rows <- data |>
-      dplyr::group_by(dplyr::across(dplyr::any_of(c("Bib", "Name")))) |>
-      dplyr::slice_max(Distance, with_ties = FALSE) |>
-      dplyr::ungroup()
-
+    rows <- get_finish_rows(data)
     title_label <- "Finishing Times"
-
   } else if (is.numeric(distance)) {
-
-    available <- unique(data$Distance)
-
-    if (!(distance %in% available)) {
-
-    # Find nearest split
-    nearest <- closest_distance(distance, available)
-
-    warning(
-      sprintf(
-        "Distance %s km not found. Using closest available distance: %s km.",
-        distance, nearest
-      )
-    )
-
-    distance <- nearest
-  }
-
-  rows <- data[data$Distance == distance, ]
-  title_label <- paste0(distance, " km Split Times")
-
-
+    rows <- get_split_rows(data, distance)
+    title_label <- paste0(unique(rows$Distance)[1], " km Split Times")
   } else {
     stop("`distance` must be 'finish' or numeric.")
   }
 
-  # --- Clean data using utils ---
-  rows <- drop_zero_distance(rows)
-  rows <- clean_invalid_times(rows)
-
-  # Convert to seconds safely
-  time_sec <- safe_hms_to_sec(rows$Time)
-
-  # Remove NA times
-  valid <- is.finite(time_sec)
-  rows <- rows[valid, ]
-  time_sec <- time_sec[valid]
-
-  dist_val <- rows$Distance
-
-  # --- Pace or time ---
+  # --- Metric values (time or pace) ---
   if (pace) {
-
-    pace_sec <- time_sec / dist_val
-
-    # Keep only valid paces
-    valid_pace <- is.finite(pace_sec) & pace_sec > 0
-    pace_sec <- pace_sec[valid_pace]
-
-    metric_values <- pace_sec
-
-    # SECOND FILTER — this is the missing fix
-    metric_values <- metric_values[is.finite(metric_values) & metric_values > 0]
-
+    metric_values <- compute_pace_metric_values(rows)
     y_label <- "Pace (mm:ss per km)"
-
-    # Round before formatting to avoid sprintf errors
     formatter <- function(x) format_pace_mmss(round(x))
-
     title_label <- sub("Times", "Paces", title_label)
+  } else {
+    metric_values <- compute_time_metric_values(rows)
+    y_label <- "Time (hh:mm:ss)"
+    formatter <- function(x) format_time_hms(round(x))
   }
 
+  # SECOND FILTER — robust against any remaining invalids
+  metric_values <- metric_values[is.finite(metric_values) & metric_values > 0]
 
   # --- Summary ---
   summary_tbl <- tibble::tibble(
@@ -130,5 +81,5 @@ marathon_summary <- function(data, distance = "finish", pace = FALSE, plot = FAL
     print(p)
   }
 
-  return(summary_tbl)
+  summary_tbl
 }
