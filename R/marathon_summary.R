@@ -3,16 +3,20 @@
 #' @description
 #' Computes summary statistics (mean, median, min, max, sd) for finishing times
 #' or for any split distance (e.g., 5K, 10K, 30K). Can summarize either time
-#' (default) or pace (mm:ss per km).
+#' (hh:mm:ss) or pace (mm:ss per km).
 #'
 #' @param data A tidy data frame with columns `Distance` and `Time`.
 #' @param distance Either "finish" (default) or a numeric distance (e.g., 30).
 #' @param pace Logical. If TRUE, summarize pace instead of time.
 #' @param plot Logical. If TRUE, plots a distribution of the selected metric.
+#' @param markers Optional character vector of markers in either `"mm:ss"` (pace)
+#'   or `"hh:mm:ss"` (finish time) format. Finish times are automatically
+#'   converted to their equivalent pace and handled identically. Markers are
+#'   shown as vertical reference lines in the plot.
 #'
 #' @return A tibble with summary statistics in seconds and formatted output.
 #' @export
-marathon_summary <- function(data, distance = "finish", pace = FALSE, plot = FALSE) {
+marathon_summary <- function(data, distance = "finish", pace = FALSE, plot = FALSE, markers = NULL) {
 
   if (!all(c("Distance", "Time") %in% names(data))) {
     stop("Data must contain 'Distance' and 'Time' columns.")
@@ -77,6 +81,58 @@ marathon_summary <- function(data, distance = "finish", pace = FALSE, plot = FAL
         y = "Count"
       ) +
       ggplot2::theme_minimal(base_size = 14)
+
+    # --- Marker logic ---
+    if (!is.null(markers)) {
+
+      marker_sec <- numeric(length(markers))
+
+      for (i in seq_along(markers)) {
+
+        parsed <- parse_marker(markers[i])
+
+        if (parsed$type == "pace") {
+          # pace directly in sec/km
+          pace_sec <- parsed$value
+
+        } else if (parsed$type == "time") {
+          # convert finish time → pace
+          marathon_dist <- max(data$Distance, na.rm = TRUE)   # <-- FIXED
+          pace_sec <- parsed$value / marathon_dist
+        }
+
+        # Convert depending on plot mode
+        if (pace) {
+          marker_sec[i] <- pace_sec
+        } else {
+          dist_val <- if (identical(distance, "finish")) {
+            max(data$Distance, na.rm = TRUE)
+          } else {
+            unique(rows$Distance)   # <-- snapped distance from dataset
+          }
+          marker_sec[i] <- pace_sec * dist_val
+        }
+      }
+
+
+      # Add vertical lines + labels
+      p <- p +
+        ggplot2::geom_vline(
+          xintercept = marker_sec,
+          colour = "red",
+          linetype = "dashed",
+          linewidth = 1
+        ) +
+        ggplot2::annotate(
+          "text",
+          x = marker_sec,
+          y = Inf,
+          label = markers,
+          vjust = -0.5,
+          colour = "red",
+          size = 4
+        )
+    }
 
     print(p)
   }

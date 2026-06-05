@@ -68,6 +68,32 @@ closest_distance <- function(requested, available) {
   available[which.min(diffs)]
 }
 
+#' @keywords internal
+#' @noRd
+parse_marker <- function(x) {
+  parts <- strsplit(x, ":")[[1]]
+
+  # mm:ss → pace
+  if (length(parts) == 2) {
+    m <- as.numeric(parts[1])
+    s <- as.numeric(parts[2])
+    return(list(type = "pace", value = m * 60 + s))
+  }
+
+  # hh:mm:ss → finish time
+  if (length(parts) == 3) {
+    h <- as.numeric(parts[1])
+    m <- as.numeric(parts[2])
+    s <- as.numeric(parts[3])
+    total <- h * 3600 + m * 60 + s
+    return(list(type = "time", value = total))
+  }
+
+  stop("Marker must be mm:ss or hh:mm:ss")
+}
+
+
+
 
 #' @importFrom stats median sd
 NULL

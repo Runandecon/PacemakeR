@@ -4,7 +4,13 @@
 \alias{marathon_summary}
 \title{Summarize marathon times or paces at finish or any split}
 \usage{
-marathon_summary(data, distance = "finish", pace = FALSE, plot = FALSE)
+marathon_summary(
+  data,
+  distance = "finish",
+  pace = FALSE,
+  plot = FALSE,
+  markers = NULL
+)
 }
 \arguments{
 \item{data}{A tidy data frame with columns `Distance` and `Time`.}
@@ -14,6 +20,11 @@ marathon_summary(data, distance = "finish", pace = FALSE, plot = FALSE)
 \item{pace}{Logical. If TRUE, summarize pace instead of time.}
 
 \item{plot}{Logical. If TRUE, plots a distribution of the selected metric.}
+
+\item{markers}{Optional character vector of markers in either `"mm:ss"` (pace)
+or `"hh:mm:ss"` (finish time) format. Finish times are automatically
+converted to their equivalent pace and handled identically. Markers are
+shown as vertical reference lines in the plot.}
 }
 \value{
 A tibble with summary statistics in seconds and formatted output.
@@ -21,5 +32,5 @@ A tibble with summary statistics in seconds and formatted output.
 \description{
 Computes summary statistics (mean, median, min, max, sd) for finishing times
 or for any split distance (e.g., 5K, 10K, 30K). Can summarize either time
-(default) or pace (mm:ss per km).
+(hh:mm:ss) or pace (mm:ss per km).
 }

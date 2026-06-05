@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-PacemakeR provides simple tools to analyse marathon training data, compute
-paces, summarise sessions, and prepare clean datasets for modelling. As well as forcasting pacing strategies.
-
+PacmakeR is an R package for analysing pacing strategies in major marathon races, such as London or Berlin. The package provides simple tools to analyse marathon data, compute paces, summarise progression as well as forcasting pacing strategies based on the fed data.
 
 ## Installation
 
@@ -36,16 +34,15 @@ devtools::install_github("Runandecon/PacemakeR")
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-library(PacemakeR)
-## basic example code
+# install.packages("devtools")
+devtools::install_github("Runandecon/PacemakeR")
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
 ```{r cars}
-summary(cars)
+#(London_Marathon_2026, distance = 5)
 ```
-
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
 
 You can also embed plots, for example:

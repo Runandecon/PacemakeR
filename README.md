@@ -10,7 +10,44 @@
 PacmakeR is an R package for analysing pacing strategies in major
 marathon races, such as London or Berlin. The package provides simple
 tools to analyse marathon data, compute paces, summarise progression as
-well as forcasting pacing strategies based on the fed data.
+well as forcasting pacing strategies using machine learning.
+
+## Introduction
+
+In marathon running, the negative split is covering the second half
+faster than the first. It is widely regarded as the hallmark of mastery,
+showcasing discipline and precision. The latest world records have been
+set this way, reflecting the delicate balance between conserving energy
+early and maximizing output late. For any marathon‑running economist
+(like me), this naturally becomes an optimization problem: start too
+slowly and you under‑use your physiological budget; start too fast and
+you collapse under nonlinear fatigue constraints (the most common
+outcome).
+
+While it is a topic of debate of negative splitting should be the goal
+or evensplitting. The negative split approach is a risk minimization. It
+allows one to start conservative and minimize blow up risk, assuming you
+are able to set a realistic goal. On a good day you negative split and
+reach the target on a bad day you will miss your dream target, but even
+split. Since physiological capabilities in a marathon come down to
+months and years of training, chance only plays a minor role and there
+will never be a “suprise”-performance outside of a certain range, unless
+you underestimate your own capabilities in marathon running, yet the
+data suggests the opposite :). My time-range of interest is everything
+below sub 3 hour marathons, this is where ambition and concistent
+training is necessary to perform and where prediction will be naturally
+more accurate. The example data-set contains the 6000 fastest amateur
+runners of the London Marathon 2026 with a mean and meduan finishtime of
+3:00, that happened by chance.
+
+PacemakeR analyzes marathon split data through this lens. One can
+evaluate a runner’s pacing perfomance. Given the data from official race
+results also relative to all other participants, it filters out external
+factors such as weather, temperature, or course‑specific features like a
+hill at kilometre 18. This comparative approach not only provides a
+cleaner assessment of past performance but also enables forecasting of
+optimal pacing strategies for future editions of the same race—or, when
+conditions are comparable, for entirely different races.
 
 ## Installation
 
@@ -35,52 +72,8 @@ devtools::install_github("Runandecon/PacemakeR")
 #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 #> generated.
 #> Using GitHub PAT from the git credential store.
-#> Downloading GitHub repo Runandecon/PacemakeR@HEAD
-#> cpp11 (0.5.3 -> 0.5.5) [CRAN]
-#> S7    (0.2.1 -> 0.2.2) [CRAN]
-#> dplyr (1.2.0 -> 1.2.1) [CRAN]
-#> Installing 3 packages: cpp11, S7, dplyr
-#> Installing packages into 'C:/Users/Julia/AppData/Local/R/win-library/4.5'
-#> (as 'lib' is unspecified)
-#> package 'cpp11' successfully unpacked and MD5 sums checked
-#> package 'S7' successfully unpacked and MD5 sums checked
-#> Warning: cannot remove prior installation of package 'S7'
-#> Warning in file.copy(savedcopy, lib, recursive = TRUE): problem copying
-#> C:\Users\Julia\AppData\Local\R\win-library\4.5\00LOCK\S7\libs\x64\S7.dll to
-#> C:\Users\Julia\AppData\Local\R\win-library\4.5\S7\libs\x64\S7.dll: Permission
-#> denied
-#> Warning: restored 'S7'
-#> package 'dplyr' successfully unpacked and MD5 sums checked
-#> Warning: cannot remove prior installation of package 'dplyr'
-#> Warning in file.copy(savedcopy, lib, recursive = TRUE): problem copying
-#> C:\Users\Julia\AppData\Local\R\win-library\4.5\00LOCK\dplyr\libs\x64\dplyr.dll
-#> to C:\Users\Julia\AppData\Local\R\win-library\4.5\dplyr\libs\x64\dplyr.dll:
-#> Permission denied
-#> Warning: restored 'dplyr'
-#> 
-#> The downloaded binary packages are in
-#>  C:\Users\Julia\AppData\Local\Temp\RtmpMlmYxf\downloaded_packages
-#> ── R CMD build ─────────────────────────────────────────────────────────────────
-#>       ✔  checking for file 'C:\Users\Julia\AppData\Local\Temp\RtmpMlmYxf\remotes4600f091e21\Runandecon-PacemakeR-bf83261/DESCRIPTION' (720ms)
-#>   ─  preparing 'PacemakeR':
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
-#>       ─  checking for LF line-endings in source and make files and shell scripts (462ms)
-#> ─  checking for empty or unneeded directories
-#>        NB: this package now depends on R (>= 3.5.0)
-#>      WARNING: Added dependency on R >= 3.5.0 because serialized objects in
-#>      serialize/load version 3 cannot be read in older versions of R.
-#>      File(s) containing such objects:
-#>        'PacemakeR/data/London_Marathon_2026.rda'
-#>      NB: this package now depends on R (>=        NB: this package now depends on R (>= 4.1.0)
-#>      WARNING: Added dependency on R >= 4.1.0 because package code uses the
-#>      pipe |> or function shorthand \(...) syntax added in R 4.1.0.
-#>      File(s) using such syntax:
-#>        'processing.R'
-#> ─  building 'PacemakeR_0.1.0.tar.gz'
-#>      
-#> 
-#> Installing package into 'C:/Users/Julia/AppData/Local/R/win-library/4.5'
-#> (as 'lib' is unspecified)
+#> Skipping install of 'PacemakeR' from a github remote, the SHA1 (e97f4072) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`?
