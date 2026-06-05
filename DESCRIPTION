@@ -1,10 +1,10 @@
 Package: PacemakeR
 Type: Package
-Title: PacmakeR is an R package for analysing results and pacing strategies of marathon races.
+Title: PacemakeR is an R package for analysing results and pacing strategies of marathon races.
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Julian", "Fischer",
+      "Julian Tim", "Fischer",
       email = "JT.Fischer@student.maastrichtuniversity.nl",
       role = c("aut", "cre")
     )
