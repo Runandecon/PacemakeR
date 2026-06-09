@@ -92,7 +92,13 @@ parse_marker <- function(x) {
   stop("Marker must be mm:ss or hh:mm:ss")
 }
 
-
+#' @keywords internal
+#' @noRd
+# Compute positive split in seconds:
+#   pos_split = Finish_sec - 2 * Half_sec
+compute_positive_split <- function(half_sec, finish_sec) {
+  finish_sec - 2 * half_sec
+}
 
 
 #' @importFrom stats median sd

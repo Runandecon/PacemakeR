@@ -18,7 +18,14 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-PacmakeR is an R package for analysing pacing strategies in major marathon races, such as London or Berlin. The package provides simple tools to analyse marathon data, compute paces, summarise progression as well as forcasting pacing strategies based on the fed data.
+PacmakeR is an R package for analysing pacing strategies in major marathon races, such as London or Berlin. The package provides simple tools to analyse marathon data, compute paces, summarise progression as well as forcasting pacing strategies using machine learning.
+
+## Introduction
+In marathon running, the negative split is covering the second half faster than the first. It is widely regarded as the hallmark of mastery, showcasing discipline and precision. The latest world records have been set this way, reflecting the delicate balance between conserving energy early and maximizing output late. For any marathon‑running economist (like me), this naturally becomes an optimization problem: start too slowly and you under‑use your physiological budget; start too fast and you collapse under nonlinear fatigue constraints (the most common outcome).
+
+While it is a topic of debate of negative splitting should be the goal or evensplitting. The negative split approach is a risk minimization. It allows one to start conservative and minimize blow up risk, assuming you are able to set a realistic goal. On a good day you negative split and reach the target on a bad day you will miss your dream target, but even split. Since physiological capabilities in a marathon come down to months and years of training, chance only plays a minor role and there will never be a "suprise"-performance outside of a certain range, unless you underestimate your own capabilities in marathon running, yet the data suggests the opposite :). My time-range of interest is everything below sub 3 hour marathons, this is where ambition and concistent training is necessary to perform and where prediction will be naturally more accurate. The example data-set contains the 6000 fastest amateur runners of the London Marathon 2026 with a mean and meduan finishtime  of 3:00, that happened by chance.
+
+PacemakeR analyzes marathon split data through this lens. One can evaluate a runner’s pacing perfomance. Given the data from official race results also relative to all other participants, it filters out external factors such as weather, temperature, or course‑specific features like a hill at kilometre 18. This comparative approach not only provides a cleaner assessment of past performance but also enables forecasting of optimal pacing strategies for future editions of the same race—or, when conditions are comparable, for entirely different races.
 
 ## Installation
 
@@ -28,7 +35,6 @@ You can install the development version of PacemakeR from [GitHub](https://githu
 # install.packages("devtools")
 devtools::install_github("Runandecon/PacemakeR")
 ```
-
 ## Example
 
 This is a basic example which shows you how to solve a common problem:

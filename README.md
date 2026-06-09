@@ -72,8 +72,38 @@ devtools::install_github("Runandecon/PacemakeR")
 #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 #> generated.
 #> Using GitHub PAT from the git credential store.
-#> Skipping install of 'PacemakeR' from a github remote, the SHA1 (e97f4072) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+#> Downloading GitHub repo Runandecon/PacemakeR@HEAD
+#> S7    (0.2.1 -> 0.2.2) [CRAN]
+#> dplyr (1.2.0 -> 1.2.1) [CRAN]
+#> Installing 2 packages: S7, dplyr
+#> Installing packages into 'C:/Users/Julia/AppData/Local/Temp/Rtmpu24gLc/temp_libpath326836ec69fb'
+#> (as 'lib' is unspecified)
+#> package 'S7' successfully unpacked and MD5 sums checked
+#> package 'dplyr' successfully unpacked and MD5 sums checked
+#> 
+#> The downloaded binary packages are in
+#>  C:\Users\Julia\AppData\Local\Temp\RtmpwP4Qt8\downloaded_packages
+#> ── R CMD build ─────────────────────────────────────────────────────────────────
+#>       ✔  checking for file 'C:\Users\Julia\AppData\Local\Temp\RtmpwP4Qt8\remotes78841a057059\Runandecon-PacemakeR-5619505/DESCRIPTION' (429ms)
+#>       ─  preparing 'PacemakeR':
+#>    checking DESCRIPTION meta-information     checking DESCRIPTION meta-information ...     checking DESCRIPTION meta-information ...   ✔  checking DESCRIPTION meta-information
+#>       ─  checking for LF line-endings in source and make files and shell scripts (381ms)
+#> ─  checking for empty or unneeded directories
+#>      NB: this package now depends on R (>=        NB: this package now depends on R (>= 3.5.0)
+#>      WARNING: Added dependency on R >= 3.5.0 because serialized objects in
+#>      serialize/load version 3 cannot be read in older versions of R.
+#>      File(s) containing such objects:
+#>        'PacemakeR/data/London_Marathon_2026.rda'
+#>      NB: this package now depends on R (>=        NB: this package now depends on R (>= 4.1.0)
+#>      WARNING: Added dependency on R >= 4.1.0 because package code uses the
+#>      pipe |> or function shorthand \(...) syntax added in R 4.1.0.
+#>      File(s) using such syntax:
+#>        'processing.R'
+#> ─  building 'PacemakeR_0.1.0.tar.gz'
+#>      
+#> 
+#> Installing package into 'C:/Users/Julia/AppData/Local/Temp/Rtmpu24gLc/temp_libpath326836ec69fb'
+#> (as 'lib' is unspecified)
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`?
