@@ -9,7 +9,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
@@ -18,43 +20,192 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-PacmakeR is an R package for analysing pacing strategies in major marathon races, such as London or Berlin. The package provides simple tools to analyse marathon data, compute paces, summarise progression as well as forcasting pacing strategies using machine learning.
+PacemakeR is an R package for analysing pacing strategies in major marathon
+races, such as London or Berlin. It provides simple tools to analyse marathon
+split data, compute paces, summarise how runners distribute their effort over
+the race, and quantify the advantage of one pacing strategy over another. It is
+built as a proper R package — `roxygen2` documentation, a generated `NAMESPACE`,
+declared dependencies, a bundled dataset, and a `testthat` suite — and developed
+under version control on [GitHub](https://github.com/Runandecon/PacemakeR), from
+which it installs directly.
 
 ## Introduction
-In marathon running, the negative split is covering the second half faster than the first. It is widely regarded as the hallmark of mastery, showcasing discipline and precision. The latest world records have been set this way, reflecting the delicate balance between conserving energy early and maximizing output late. For any marathon‑running economist (like me), this naturally becomes an optimization problem: start too slowly and you under‑use your physiological budget; start too fast and you collapse under nonlinear fatigue constraints (the most common outcome).
 
-While it is a topic of debate of negative splitting should be the goal or evensplitting. The negative split approach is a risk minimization. It allows one to start conservative and minimize blow up risk, assuming you are able to set a realistic goal. On a good day you negative split and reach the target on a bad day you will miss your dream target, but even split. Since physiological capabilities in a marathon come down to months and years of training, chance only plays a minor role and there will never be a "suprise"-performance outside of a certain range, unless you underestimate your own capabilities in marathon running, yet the data suggests the opposite :). My time-range of interest is everything below sub 3 hour marathons, this is where ambition and concistent training is necessary to perform and where prediction will be naturally more accurate. The example data-set contains the 6000 fastest amateur runners of the London Marathon 2026 with a mean and meduan finishtime  of 3:00, that happened by chance.
+In marathon running, a *negative split* means covering the second half of the
+race faster than the first. It is widely regarded as the hallmark of mastery,
+showcasing discipline and precision, and the latest world records have been set
+this way — reflecting the delicate balance between conserving energy early and
+maximising output late. For any marathon-running economist (like me), this
+naturally becomes an optimization problem: start too slowly and you under-use
+your physiological budget; start too fast and you collapse under nonlinear
+fatigue constraints (the most common outcome, known as "hitting the wall").
 
-PacemakeR analyzes marathon split data through this lens. One can evaluate a runner’s pacing perfomance. Given the data from official race results also relative to all other participants, it filters out external factors such as weather, temperature, or course‑specific features like a hill at kilometre 18. This comparative approach not only provides a cleaner assessment of past performance but also enables forecasting of optimal pacing strategies for future editions of the same race—or, when conditions are comparable, for entirely different races.
+Whether negative splitting or even splitting should be the goal is a matter of
+debate. The negative-split approach is essentially risk minimization: it lets
+you start conservatively and minimise blow-up risk, assuming you can set a
+realistic goal. On a good day you negative split and reach the target; on a bad
+day you miss the dream target but still even split. Since marathon performance
+comes down to months and years of training, chance plays only a minor role, and
+there is rarely a "surprise" performance outside a fairly predictable range.
+
+This package analyses marathon split data through that lens. It evaluates a
+runner's pacing relative to the rest of the field, which filters out external
+factors such as weather, temperature, or course features like a hill at
+kilometre 18. This comparative approach gives a cleaner read on pacing and lets
+us describe the strategy the data actually rewards.
+
+### A few running terms, briefly
+
+For readers who have never run a marathon, three terms are worth defining up
+front, since everything below is built on them:
+
+- **Distance.** A marathon is 42.195 km.
+- **splits** are recorded by races as the the elapsed
+  time between fixed checkpoints (timing mats) along the course, e.g. at 5 km,
+  10 km, the half (21.1 km), and so on.
+- **Pace.** Speed expressed as time per kilometre, written `mm:ss` (e.g. a pace
+  of `04:30` means four minutes thirty seconds per km). Lower pace = faster.
+  Pace is just the inverse of speed, scaled to the units runners actually think in.
 
 ## Installation
 
-You can install the development version of PacemakeR from [GitHub](https://github.com/Runandecon/PacemakeR) with:
+You can install the development version of PacemakeR from
+[GitHub](https://github.com/Runandecon/PacemakeR) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("Runandecon/PacemakeR")
 ```
-## Example
 
-This is a basic example which shows you how to solve a common problem:
+## The data
 
-```{r example}
-# install.packages("devtools")
-devtools::install_github("Runandecon/PacemakeR")
+The package ships with `London_Marathon_2026`, the official split-level results
+of the fastest 6000 amateur men in the 2026 London Marathon, scraped from the
+official results site. Each row is one runner at one timing mat — the standard
+way race results are published — which makes it *long-format* data: many rows
+per runner.
+
+Marathon results in the wild are messy: missing splits, runners who dropped out,
+times recorded as blanks or `DNF`. Before any analysis is possible the data has
+to be reshaped from this long format into one tidy pacing table per runner and
+cleaned of those invalid entries. The package does this with a **tidyverse**
+(`dplyr` / `tibble`) pipeline grouping by runner, ordering splits, and
+differencing successive times into segment paces. This is the data-manipulation
+backbone everything downstream relies on.
+
+```{r data}
+library(PacemakeR)
+data("London_Marathon_2026")
+head(London_Marathon_2026)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+The columns are `Name`, `Nationality`, `Bib` (the runner's id number), `Distance` (the split
+distance in km), and `Time` (elapsed time at that split, as `hh:mm:ss`).
 
-```{r cars}
-#(London_Marathon_2026, distance = 5)
+## The functions
+
+The functions build on each other: describe the field, distil its pacing
+strategy, and price the payoff of running it well. Each one also leans on a
+particular tool from the course, introduced where it does its work.
+
+### `marathon_summary()` — describe the field
+
+`marathon_summary()` reduces the field to a five-number summary (mean, median,
+min, max, standard deviation) of either finishing times or any intermediate
+split. It can report this in **time** (`hh:mm:ss`) or in **pace** (`mm:ss` per
+km), and can draw the distribution.
+
+For an econometrician: this is the descriptive-statistics step — what does the
+distribution of outcomes look like, and where would a given target sit within
+it? The distribution plot is the package's first use of **ggplot2**, which
+handles all visualisation here. On top of the histogram it overlays vertical
+reference markers; the two below mark a 2:30 and a 3:00 finish (elite-amateur
+and strong-amateur benchmarks), which the function converts automatically from a
+finish time into the pace it implies, so a target on the time scale lines up
+correctly on the pace axis.
+
+```{r summary-table}
+marathon_summary(London_Marathon_2026)
 ```
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
 
-You can also embed plots, for example:
+```{r pacing-distribution}
+marathon_summary(London_Marathon_2026, distance = 5, pace = TRUE, plot = TRUE, markers = c("02:30:00", "03:00:00"))
 
-```{r pressure, echo = FALSE}
-plot(pressure)
+marathon_summary(London_Marathon_2026, plot = TRUE, markers = c("02:30:00", "03:00:00"))
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+### `pacemaker()` — distil the strategy
+
+`pacemaker()` is the analytical core. For every runner it builds a
+*relative-pace curve*: their pace at each split, normalised so that a chosen
+reference split equals 1. Normalising this way is what makes a fast and a slow
+runner comparable on the same axis — it strips out absolute speed and leaves
+only the *shape* of the effort, i.e. where each runner spent or conserved
+energy. The function then aggregates these curves across the whole field, with a
+quantile band for the spread, and separately averages the runners who ran a
+negative split, overlaying them for comparison.
+
+For the econometrician: each runner's curve is an index normalised to a base
+period (the reference split), exactly like a price index normalised to a base
+year. Values above 1 mean "faster than the reference," below 1 "slower." The
+aggregate curve is the field's average index path; the band is its empirical
+spread.
+
+This is where the package's use of **S3 classes** comes in. Rather than handing
+back a bare list of numbers, `pacemaker()` returns an object of a custom class,
+`pacemaker`, that bundles the curve, the cumulative-advantage data, and metadata
+about the fit. Defining a class lets the package give the object its own `print`
+and `plot` methods, so it behaves like a first-class R object: typing its name
+dispatches to `pacemaker_print`, which lays out the pacing progression as a
+table, and calling `plot()` dispatches to `pacemaker_plot`, which draws the
+curve. The single object is the whole analysis — everything you might want to
+see is computed once and read off it on demand.
+
+```{r curve}
+#opt <- pacemaker(London_Marathon_2026, reference = 25)
+#opt          # dispatches to print.pacemaker: the pacing progression as a table
+```
+
+```{r curve-plot}
+#pacemaker_print(obj)
+#pacemaker_plot(obj)
+```
+
+### `plot(opt, "gain")` — price the payoff
+
+Because the analysis lives in one `pacemaker` object, pricing the strategy is
+just another view of it rather than a separate function. The object also stores
+the *gain*: the cumulative advantage a negative-split runner builds over the
+field across the race. Asking its `plot` method for the `"gain"` view integrates
+the gap between the two curves along the course and reports it either as distance
+(metres ahead) or, given a reference pace, as time saved — the same S3 `plot`
+method, switched to a different output.
+
+For the econometrician: this is the cumulative integral of the per-segment
+difference between two index paths — the running total of how far ahead the
+negative-split strategy puts you, expressed in units a runner cares about.
+
+```{r gain}
+#pacemaker_plot(opt, "gain")                                   # advantage in metres
+```
+
+```{r gain-time}
+#pacemaker_plot(opt, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
+```
+
+## Course tools at a glance
+
+The tools above were each introduced where they do their work: version control
+and the package skeleton frame the whole project; the **tidyverse** pipeline
+reshapes and cleans the raw splits; **ggplot2** carries every visualisation; and
+a custom **S3 class** turns the central `pacemaker()` result into an object that
+prints and plots itself. The package is tracked on GitHub, documented with
+`roxygen2`, and validated by a `testthat` suite covering the helpers, the core
+computation, and the S3 methods, so `devtools::check()` passes from a clean
+environment.
+
+## Notes on reproducibility
+
+This `README.md` is generated from `README.Rmd`; re-render it with
+`devtools::build_readme()` whenever the source changes, and commit the resulting
+figures in `man/figures/` so they display on GitHub.

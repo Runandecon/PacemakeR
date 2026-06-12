@@ -37,19 +37,27 @@ is_pacemaker <- function(x) inherits(x, "pacemaker")
 
 #' @rdname pacemaker-class
 #' @export
-print.pacemaker <- function(x, ...) {
+pacemaker_print <- function(x) {
   cat("<pacemaker> pacing analysis\n")
   cat(sprintf("  Reference split : %s km\n", x$meta$relative %||% NA))
   cat(sprintf("  Runners used    : %s\n",    x$meta$n_runners %||% NA))
   cat(sprintf("  Aggregated by   : %s\n",    x$meta$agg_fun %||% NA))
   cat("\n")
-  print(x$summary)
+
+  rel <- x$curve$rel_agg
+  tbl <- data.frame(
+    Distance  = x$curve$Distance,
+    Rel_pace  = round(rel, 3),
+    Change    = round(c(NA, diff(rel)), 3),       # shift from the previous split
+    Neg_split = round(x$curve$rel_neg_split, 3)
+  )
+  print(tbl, row.names = FALSE)
   invisible(x)
 }
 
 #' @rdname pacemaker-class
 #' @export
-plot.pacemaker <- function(x, which = c("curve", "gain"),
+pacemaker_plot <- function(x, which = c("curve", "gain"),
                            unit = c("meter", "time"), pace_sec = NULL, ...) {
 
   which <- match.arg(which)
