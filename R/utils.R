@@ -1,60 +1,75 @@
 # -------------------------------------------------------------------
 # Utility functions for PacemakeR
-# Internal helpers: formatting, cleaning, conversions
+# Internal helpers: formatting, time parsing, row cleaning, small bits
+# of math shared across the package. None of this is exported.
 # -------------------------------------------------------------------
 
 #' @keywords internal
 #' @noRd
 #' @import dplyr ggplot2 hms scales tibble
-#' @importFrom stats median sd
+#' @importFrom stats median sd quantile
+#' @importFrom utils globalVariables
 NULL
 
+# Column names referenced with bare symbols inside ggplot/dplyr, declared
+# here so R CMD check doesn't flag them as undefined globals.
+utils::globalVariables(c(
+  ".data", "Distance", "PlotValue", "values",
+  "rel_agg", "rel_ci_low", "rel_ci_high", "rel_neg_split", "cumdiff"
+))
+
+
+# ---- Formatting -----------------------------------------------------
+
 #' @keywords internal
 #' @noRd
-# Format seconds into mm:ss pace string
+# Seconds -> "mm:ss".
 format_pace_mmss <- function(sec) {
-  m <- sec %/% 60
-  s <- sec %% 60
-  sprintf("%02d:%02d", m, s)
+  sprintf("%02d:%02d", as.integer(sec %/% 60), as.integer(sec %% 60))
 }
 
 #' @keywords internal
 #' @noRd
-# Format seconds into hh:mm:ss time string
+# Seconds -> "hh:mm:ss".
 format_time_hms <- function(sec) {
-  h <- sec %/% 3600
-  m <- (sec %% 3600) %/% 60
-  s <- sec %% 60
-  sprintf("%02d:%02d:%02d", h, m, s)
+  sprintf("%02d:%02d:%02d",
+          as.integer(sec %/% 3600),
+          as.integer((sec %% 3600) %/% 60),
+          as.integer(sec %% 60))
 }
 
 #' @keywords internal
 #' @noRd
-# Convert a relative ratio (e.g., 1.05, 0.98) into a signed percentage string
-# such as "+5%" or "-2%".
+# Ratio (1 = on pace) -> signed percentage, e.g. 1.05 -> "+5%".
 format_percent_rel <- function(x) {
-  pct <- (x - 1) * 100
-  sprintf("%+d%%", round(pct))
+  sprintf("%+d%%", round((x - 1) * 100))
 }
+
+
+# ---- Time parsing and cleaning --------------------------------------
 
 #' @keywords internal
 #' @noRd
-# Safely convert hh:mm:ss to seconds, returning NA for invalid entries.
+# "hh:mm:ss" -> seconds. Anything that won't parse comes back as NA
+# rather than throwing, so one bad row can't kill a whole call.
 safe_hms_to_sec <- function(x) {
-  out <- suppressWarnings(as.numeric(hms::as_hms(x)))
-  ifelse(is.finite(out), out, NA_real_)
+  vapply(x, function(v) {
+    out <- tryCatch(suppressWarnings(as.numeric(hms::as_hms(v))),
+                    error = function(e) NA_real_)
+    if (is.finite(out)) out else NA_real_
+  }, numeric(1), USE.NAMES = FALSE)
 }
 
 #' @keywords internal
 #' @noRd
-# Remove synthetic 0 km rows (added for split-pace plotting)
+# Drop the synthetic 0 km row added for split-pace plotting.
 drop_zero_distance <- function(df) {
   df[df$Distance > 0, ]
 }
 
 #' @keywords internal
 #' @noRd
-# Remove rows with invalid or missing time values (NA, "", DNF, DNS)
+# Drop rows with missing / blank / DNF / DNS times.
 clean_invalid_times <- function(df) {
   bad <- is.na(df$Time) | df$Time %in% c("", "DNF", "DNS")
   df[!bad, ]
@@ -62,47 +77,34 @@ clean_invalid_times <- function(df) {
 
 #' @keywords internal
 #' @noRd
-# Closest available distance to requested
+# Closest available distance to a requested one.
 closest_distance <- function(requested, available) {
-  diffs <- abs(available - requested)
-  available[which.min(diffs)]
+  available[which.min(abs(available - requested))]
 }
+
+
+# ---- Markers and splits ---------------------------------------------
 
 #' @keywords internal
 #' @noRd
+# Parse a marker string: "mm:ss" is a pace, "hh:mm:ss" is a finish time.
 parse_marker <- function(x) {
-  parts <- strsplit(x, ":")[[1]]
+  parts <- as.numeric(strsplit(x, ":")[[1]])
 
-  # mm:ss → pace
-  if (length(parts) == 2) {
-    m <- as.numeric(parts[1])
-    s <- as.numeric(parts[2])
-    return(list(type = "pace", value = m * 60 + s))
+  if (length(parts) == 2) {                       # mm:ss -> pace
+    return(list(type = "pace", value = parts[1] * 60 + parts[2]))
   }
-
-  # hh:mm:ss → finish time
-  if (length(parts) == 3) {
-    h <- as.numeric(parts[1])
-    m <- as.numeric(parts[2])
-    s <- as.numeric(parts[3])
-    total <- h * 3600 + m * 60 + s
-    return(list(type = "time", value = total))
+  if (length(parts) == 3) {                       # hh:mm:ss -> finish time
+    return(list(type = "time",
+                value = parts[1] * 3600 + parts[2] * 60 + parts[3]))
   }
-
   stop("Marker must be mm:ss or hh:mm:ss")
 }
 
 #' @keywords internal
 #' @noRd
-# Compute positive split in seconds:
-#   pos_split = Finish_sec - 2 * Half_sec
+# Positive split in seconds: finish - 2 * half. A negative result means
+# the second half was quicker, i.e. a negative split.
 compute_positive_split <- function(half_sec, finish_sec) {
   finish_sec - 2 * half_sec
 }
-
-
-#' @importFrom stats median sd
-NULL
-
-utils::globalVariables(c(".data", "Distance", "PlotValue", "values"))
-
