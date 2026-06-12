@@ -60,7 +60,7 @@ For readers who have never run a marathon, three terms are worth defining up
 front, since everything below is built on them:
 
 - **Distance.** A marathon is 42.195 km.
-- **splits** are recorded by races as the the elapsed
+- **Splits** are recorded by races as the the elapsed
   time between fixed checkpoints (timing mats) along the course, e.g. at 5 km,
   10 km, the half (21.1 km), and so on.
 - **Pace.** Speed expressed as time per kilometre, written `mm:ss` (e.g. a pace
@@ -75,6 +75,7 @@ You can install the development version of PacemakeR from
 ``` r
 # install.packages("devtools")
 devtools::install_github("Runandecon/PacemakeR")
+library(PacemakeR)
 ```
 
 ## The data
@@ -93,8 +94,13 @@ cleaned of those invalid entries. The package does this with a **tidyverse**
 differencing successive times into segment paces. This is the data-manipulation
 backbone everything downstream relies on.
 
-```{r data}
+```{r download, echo=FALSE, message=FALSE, warning=FALSE}
+library(devtools)
+devtools::install_github("Runandecon/PacemakeR")
 library(PacemakeR)
+```
+
+```{r data}
 data("London_Marathon_2026")
 head(London_Marathon_2026)
 ```
@@ -162,13 +168,12 @@ curve. The single object is the whole analysis — everything you might want to
 see is computed once and read off it on demand.
 
 ```{r curve}
-#opt <- pacemaker(London_Marathon_2026, reference = 25)
-#opt          # dispatches to print.pacemaker: the pacing progression as a table
+london <- pacemaker(London_Marathon_2026, relative = 21.0975)
 ```
 
 ```{r curve-plot}
-#pacemaker_print(obj)
-#pacemaker_plot(obj)
+pacemaker_print(london)
+pacemaker_plot(london)
 ```
 
 ### `plot(opt, "gain")` — price the payoff
@@ -186,11 +191,11 @@ difference between two index paths — the running total of how far ahead the
 negative-split strategy puts you, expressed in units a runner cares about.
 
 ```{r gain}
-#pacemaker_plot(opt, "gain")                                   # advantage in metres
+pacemaker_plot(london, "gain")                                   # advantage in metres
 ```
 
 ```{r gain-time}
-#pacemaker_plot(opt, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
+pacemaker_plot(london, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
 ```
 
 ## Course tools at a glance

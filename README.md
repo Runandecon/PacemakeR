@@ -52,17 +52,14 @@ actually rewards.
 For readers who have never run a marathon, three terms are worth
 defining up front, since everything below is built on them:
 
-- **Distance.** A marathon is 42.195 km. Races record *splits* — the
-  elapsed time at fixed checkpoints (timing mats) along the course,
-  e.g. at 5 km, 10 km, the half (21.1 km), and so on.
+- **Distance.** A marathon is 42.195 km.
+- **Splits** are recorded by races as the the elapsed time between fixed
+  checkpoints (timing mats) along the course, e.g. at 5 km, 10 km, the
+  half (21.1 km), and so on.
 - **Pace.** Speed expressed as time per kilometre, written `mm:ss`
   (e.g. a pace of `04:30` means four minutes thirty seconds per km).
   Lower pace = faster. Pace is just the inverse of speed, scaled to the
-  units runners actually talk in.
-- **Split / negative split.** A *split* is the pace over one segment
-  between two mats. A *negative split* is running the second half at a
-  lower (faster) pace than the first — the strategy this package treats
-  as the target.
+  units runners actually think in.
 
 ## Installation
 
@@ -72,6 +69,7 @@ You can install the development version of PacemakeR from
 ``` r
 # install.packages("devtools")
 devtools::install_github("Runandecon/PacemakeR")
+library(PacemakeR)
 ```
 
 ## The data
@@ -92,7 +90,6 @@ into segment paces. This is the data-manipulation backbone everything
 downstream relies on.
 
 ``` r
-library(PacemakeR)
 data("London_Marathon_2026")
 head(London_Marathon_2026)
 #>              Name Nationality  Bib Distance     Time
@@ -158,18 +155,18 @@ marathon_summary(London_Marathon_2026, distance = 5, pace = TRUE, plot = TRUE, m
     #> 4 max      304.  05:04    
     #> 5 sd        20.1 00:20
 
-    marathon_summary(London_Marathon_2026, distance = 42.195, pace = TRUE, plot = TRUE, markers = c("02:30:00", "03:00:00"))
+    marathon_summary(London_Marathon_2026, plot = TRUE, markers = c("02:30:00", "03:00:00"))
 
 <img src="man/figures/README-pacing-distribution-2.png" alt="" width="100%" />
 
     #> # A tibble: 5 × 3
     #>   metric seconds formatted
     #>   <chr>    <dbl> <chr>    
-    #> 1 mean     256.  04:16    
-    #> 2 median   256.  04:16    
-    #> 3 min      189.  03:09    
-    #> 4 max      288.  04:48    
-    #> 5 sd        20.9 00:21
+    #> 1 mean    10800. 03:00:00 
+    #> 2 median  10816  03:00:16 
+    #> 3 min      7974  02:12:54 
+    #> 4 max     12148  03:22:28 
+    #> 5 sd        882. 00:14:42
 
 ### `pacemaker()` — distil the strategy
 
@@ -195,20 +192,37 @@ a custom class, `pacemaker`, that bundles the curve, the
 cumulative-advantage data, and metadata about the fit. Defining a class
 lets the package give the object its own `print` and `plot` methods, so
 it behaves like a first-class R object: typing its name dispatches to
-`print.pacemaker`, which lays out the pacing progression as a table, and
-calling `plot()` dispatches to `plot.pacemaker`, which draws the curve.
+`pacemaker_print`, which lays out the pacing progression as a table, and
+calling `plot()` dispatches to `pacemaker_plot`, which draws the curve.
 The single object is the whole analysis — everything you might want to
 see is computed once and read off it on demand.
 
 ``` r
-#opt <- pacemaker(London_Marathon_2026, reference = 25)
-#opt          # dispatches to print.pacemaker: the pacing progression as a table
+london <- pacemaker(London_Marathon_2026, relative = 21.0975)
 ```
 
 ``` r
-#pacemaker_print(obj)
-#pacemaker_plot(obj)
+pacemaker_print(london)
+#> <pacemaker> pacing analysis
+#>   Reference split : 21.0975 km
+#>   Runners used    : 6027
+#>   Aggregated by   : mean
+#> 
+#>  Distance Rel_pace Change Neg_split
+#>    5.0000    1.013     NA     0.996
+#>   10.0000    1.006 -0.007     0.990
+#>   15.0000    0.986 -0.020     0.977
+#>   20.0000    1.011  0.025     1.009
+#>   21.0975    1.000 -0.011     1.000
+#>   25.0000    0.992 -0.008     1.004
+#>   30.0000    0.969 -0.023     1.000
+#>   35.0000    0.945 -0.024     1.004
+#>   40.0000    0.925 -0.020     1.013
+#>   42.1950    0.927  0.001     1.023
+pacemaker_plot(london)
 ```
+
+<img src="man/figures/README-curve-plot-1.png" alt="" width="100%" />
 
 ### `plot(opt, "gain")` — price the payoff
 
@@ -227,12 +241,16 @@ how far ahead the negative-split strategy puts you, expressed in units a
 runner cares about.
 
 ``` r
-#pacemaker_plot(opt, "gain")                                   # advantage in metres
+pacemaker_plot(london, "gain")                                   # advantage in metres
 ```
 
+<img src="man/figures/README-gain-1.png" alt="" width="100%" />
+
 ``` r
-#pacemaker_plot(opt, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
+pacemaker_plot(london, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
 ```
+
+<img src="man/figures/README-gain-time-1.png" alt="" width="100%" />
 
 ## Course tools at a glance
 
