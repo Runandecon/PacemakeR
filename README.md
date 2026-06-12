@@ -23,14 +23,33 @@ installs directly.
 Marathons are one of the biggest sport-events in counts of active
 particpants worldwide. One runs 42.195 km. As challenging as it sounds,
 having a strategy how to optimally distribute energy over the course of
-the race can make the journey more joyful. This package is an attempt to
-provide an optimal energy conserving pacing strategy tailored to the
-specific marathon-data used. The person dictating the pace in a race is
-called a *Pacemaker*, hence the name of this package.
+the race can make the journey more enjoyable. This package is an attempt
+to provide an optimal energy conserving pacing strategy tailored to the
+specific marathon-data used.
 
 The target group for this package is the ambitious top 15% of amateur
-runners who aim to run sub 3 hours or much faster. In fact the target
-group is me as I aim to run under 02:30:00 end of this year.
+runners who aim to run a marathon in under 3 hours or less. In fact the
+target group is me as I aim to run Sub 2:30 end of this year.
+
+#### A few running terms, briefly
+
+For readers who have never run a marathon, three terms are worth
+defining up front, since everything below is built on them:
+
+- **Splits** are recorded by races as the the elapsed time between fixed
+  checkpoints (timing mats) along the course, e.g. every 5 km, the half
+  (21.0975 km), and the finish (42.195 km).
+- **Pace** is the speed expressed as time per kilometer, written `mm:ss`
+  (e.g. a pace of `04:30` means four minutes thirty seconds per km).
+  Lower pace = faster. Pace is just the inverse of speed, scaled to the
+  units runners think in.
+- **Relative Pace** is the pace of a split relative to some split
+  normalised to 1. With 0.98 being 2% slower and 1.02 being 2% faster.
+  As default the normalised pace = 1 is at 25 km, as it’s a good proxy
+  for potential average pace without being biased of either early
+  enthusiasm or late race decline.
+- **Pacemaker** is the person that dictates the pace in a race, hence
+  the name of this package.
 
 ### The optimal strategy
 
@@ -69,24 +88,6 @@ While the pacing progression of an individual runner is somewhat
 endogenous, my experience and expertise give me the confidence to say
 that the results in the following case study are sensible and can be
 utilized in the next marathon one runs.
-
-### A few running terms, briefly
-
-For readers who have never run a marathon, three terms are worth
-defining up front, since everything below is built on them:
-
-- **Splits** are recorded by races as the the elapsed time between fixed
-  checkpoints (timing mats) along the course, e.g. every 5 km, the half
-  (21.0975 km), and the finish (42.195 km).
-- **Pace** is the speed expressed as time per kilometer, written `mm:ss`
-  (e.g. a pace of `04:30` means four minutes thirty seconds per km).
-  Lower pace = faster. Pace is just the inverse of speed, scaled to the
-  units runners think in.
-- **Relative Pace** is the pace of a split relative to some split
-  normalised to 1. With 0.98 being 2% slower and 1.02 being 2% faster.
-  As default the normalised pace = 1 is at 25 km, as it’s a good proxy
-  for potential average pace without being biased of either early
-  enthusiasm or late race decline.
 
 # Case Study
 
@@ -186,7 +187,7 @@ these target times. The plot suggests to be normally distributed.
 marathon_summary(London_Marathon_2026, distance = 5, pace = TRUE, plot = TRUE, markers = c("02:30:00", "03:00:00"))
 ```
 
-<img src="man/figures/README-pacing-distribution 5K-1.png" alt="" width="100%" />
+<img src="man/figures/README-pacing-distribution-5K-1.png" alt="" width="100%" />
 
     #> # A tibble: 5 × 3
     #>   metric seconds formatted
@@ -205,7 +206,7 @@ many runners overshoot in the beginning part of the race.
 marathon_summary(London_Marathon_2026, plot = TRUE, pace = TRUE, markers = c("02:30:00", "03:00:00"))
 ```
 
-<img src="man/figures/README-pacing-distribution Finish-1.png" alt="" width="100%" />
+<img src="man/figures/README-pacing-distribution-Finish-1.png" alt="" width="100%" />
 
     #> # A tibble: 5 × 3
     #>   metric seconds formatted
@@ -224,7 +225,7 @@ One can also view the race of any individual using `plot_pace_splits()`.
 plot_pace_splits(London_Marathon_2026, id = 1000)
 ```
 
-<img src="man/figures/README-pacing-distribution individual-1.png" alt="" width="100%" />
+<img src="man/figures/README-pacing-distribution-individual-1.png" alt="" width="100%" />
 \## The optimal strategy
 
 ### `pacemaker()` — distil the strategy

@@ -31,9 +31,23 @@ which it installs directly.
 
 ## Introduction
 
-Marathons are one of the biggest sport-events in counts of active particpants worldwide. One runs 42.195 km. As challenging as it sounds, having a strategy how to optimally distribute energy over the course of the race can make the journey more joyful. This package is an attempt to provide an optimal energy conserving pacing strategy tailored to the specific marathon-data used. The person dictating the pace in a race is called a *Pacemaker*, hence the name of this package.
+Marathons are one of the biggest sport-events in counts of active particpants worldwide. One runs 42.195 km. As challenging as it sounds, having a strategy how to optimally distribute energy over the course of the race can make the journey more enjoyable. This package is an attempt to provide an optimal energy conserving pacing strategy tailored to the specific marathon-data used.
 
-The target group for this package is the ambitious top 15% of amateur runners who aim to run sub 3 hours or much faster. In fact the target group is me as I aim to run under 02:30:00 end of this year.
+The target group for this package is the ambitious top 15% of amateur runners who aim to run a marathon in under 3 hours or less. In fact the target group is me as I aim to run Sub 2:30 end of this year.
+
+#### A few running terms, briefly
+
+For readers who have never run a marathon, three terms are worth defining up
+front, since everything below is built on them:
+
+- **Splits** are recorded by races as the the elapsed
+  time between fixed checkpoints (timing mats) along the course, e.g. every 5 km, the half (21.0975 km), and the finish (42.195 km).
+- **Pace** is the speed expressed as time per kilometer, written `mm:ss` (e.g. a pace
+  of `04:30` means four minutes thirty seconds per km). Lower pace = faster.
+  Pace is just the inverse of speed, scaled to the units runners think in.
+- **Relative Pace** is the pace of a split relative to some split normalised to 1. With 0.98 being 2% slower and 1.02 being 2% faster.
+As default the normalised pace = 1 is at 25 km, as it's a good proxy for potential average pace without being biased of either early enthusiasm or late race decline.
+- **Pacemaker** is the person that dictates the pace in a race, hence the name of this package.
 
 ### The optimal strategy
 For any marathon‑running economist (like me), the optimal pacing strategy naturally becomes an intertemporal optimization problem: start too fast and you collapse under fatigue constraints also called "hitting the wall"; start too slow and you under‑use your physiological budget. In theory the optimal strategy is to run a marathon with even splits, always running the same speed, however in reality this rarely works and leads to disastrous blow ups. The alternative is to run a *negative split*.
@@ -57,18 +71,6 @@ factors such as weather, temperature, or course features like the elevation prof
 
 While the pacing progression of an individual runner is somewhat endogenous, my experience and expertise give me the confidence to say that the results in the following case study are sensible and can be utilized in the next marathon one runs.
 
-### A few running terms, briefly
-
-For readers who have never run a marathon, three terms are worth defining up
-front, since everything below is built on them:
-
-- **Splits** are recorded by races as the the elapsed
-  time between fixed checkpoints (timing mats) along the course, e.g. every 5 km, the half (21.0975 km), and the finish (42.195 km).
-- **Pace** is the speed expressed as time per kilometer, written `mm:ss` (e.g. a pace
-  of `04:30` means four minutes thirty seconds per km). Lower pace = faster.
-  Pace is just the inverse of speed, scaled to the units runners think in.
-- **Relative Pace** is the pace of a split relative to some split normalised to 1. With 0.98 being 2% slower and 1.02 being 2% faster.
-As default the normalised pace = 1 is at 25 km, as it's a good proxy for potential average pace without being biased of either early enthusiasm or late race decline.
 
 # Case Study
 The following case study introduces the package functions and explains its logic, as well as analyse the 2026 London Marathon. I genuinely hope this package fits somewhat to what is expected from this course!
@@ -129,20 +131,20 @@ marathon_summary(London_Marathon_2026)
 
 The first plot shows the distribution of the runners at 5K. You can see peaks at the paces necessary for the red marked goals of 02:30:00 and 03:00:00. This shows the clear intend that most runners aim to run below these target times. The plot suggests to be normally distributed.
 
-```{r pacing-distribution 5K}
+```{r pacing-distribution-5K}
 marathon_summary(London_Marathon_2026, distance = 5, pace = TRUE, plot = TRUE, markers = c("02:30:00", "03:00:00"))
 ```
 
 
 The second plot shows the finishing time distribution. It is clear that the distribution of the very same runners is now skewed to the left, as many runners overshoot in the beginning part of the race.
 
-```{r pacing-distribution Finish}
+```{r pacing-distribution-Finish}
 marathon_summary(London_Marathon_2026, plot = TRUE, pace = TRUE, markers = c("02:30:00", "03:00:00"))
 ```
 
 ### `plot_pace_splits()`
 One can also view the race of any individual using `plot_pace_splits()`.
-```{r pacing-distribution individual}
+```{r pacing-distribution-individual}
 plot_pace_splits(London_Marathon_2026, id = 1000)
 ```
 ## The optimal strategy
