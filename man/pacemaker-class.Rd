@@ -5,27 +5,37 @@
 \alias{is_pacemaker}
 \alias{print.pacemaker}
 \alias{plot.pacemaker}
-\alias{summary.pacemaker}
 \title{Methods for `pacemaker` objects}
 \usage{
 is_pacemaker(x)
 
 \method{print}{pacemaker}(x, ...)
 
-\method{plot}{pacemaker}(x, ...)
-
-\method{summary}{pacemaker}(object, ...)
+\method{plot}{pacemaker}(
+  x,
+  which = c("curve", "gain"),
+  unit = c("meter", "time"),
+  pace_sec = NULL,
+  ...
+)
 }
 \arguments{
-\item{x, object}{A `pacemaker` object.}
+\item{x}{A `pacemaker` object.}
 
 \item{...}{Unused; present for method consistency.}
+
+\item{which}{Which view to plot: `"curve"` (default) or `"gain"`.}
+
+\item{unit}{For the gain view, `"meter"` (default) or `"time"`.}
+
+\item{pace_sec}{Reference pace in sec/km; required when `unit = "time"`.}
 }
 \value{
-`is_pacemaker()` a logical; `summary()` a tibble;
-  `print()`/`plot()` their input, invisibly.
+`is_pacemaker()` a logical; `print()`/`plot()` their input,
+  invisibly.
 }
 \description{
-`print`, `plot`, `summary` and `is_pacemaker` for the object returned
-by [pacemaker()].
+`print`, `plot` and `is_pacemaker` for the object returned by
+[pacemaker()]. `print()` shows the summary table; `plot()` draws either
+the pacing curve or the cumulative negative-split advantage.
 }

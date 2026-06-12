@@ -2,14 +2,13 @@
 % Please edit documentation in R/Pacemaker.R
 \name{pacemaker}
 \alias{pacemaker}
-\title{Aggregate pacing curve across runners}
+\title{Build a pacing analysis from marathon split data}
 \usage{
 pacemaker(
   data,
   relative = 30,
   agg_fun = c("mean", "median"),
-  ci_probs = c(0.05, 0.95),
-  return_plot = TRUE
+  ci_probs = c(0.05, 0.95)
 )
 }
 \arguments{
@@ -21,16 +20,30 @@ pacemaker(
 \item{agg_fun}{Aggregation across runners, `"mean"` or `"median"`.}
 
 \item{ci_probs}{Lower/upper quantile probabilities for the band.}
-
-\item{return_plot}{Attach a ggplot2 object? Default `TRUE`.}
 }
 \value{
 A [pacemaker] object.
 }
 \description{
-For every runner, builds a relative-pace curve normalised so the
-reference split equals 1, then averages across runners with a quantile
-band for the spread. The negative-split runners are averaged
-separately and overlaid, so the typical field and the target strategy
-sit on the same plot.
+Runs the whole pacing analysis in one call and returns a single object
+you can plot and print from. For every runner it builds a relative-pace
+curve normalised so the reference split equals 1, averages those curves
+across the field with a quantile band, and works out the negative-split
+subgroup and the cumulative advantage they gain over the course.
+
+The result is a `pacemaker` object. From it you can:
+\itemize{
+  \item `plot(x)` -- the aggregate pacing curve (default),
+  \item `plot(x, "gain")` -- the cumulative negative-split advantage,
+  \item `print(x)` -- the summary table.
+}
+}
+\examples{
+\dontrun{
+  opt <- pacemaker(London_Marathon_2026)
+  opt                                  # summary table
+  plot(opt)                            # pacing curve
+  plot(opt, "gain")                    # advantage in metres
+  plot(opt, "gain", unit = "time", pace_sec = 300)
+}
 }
