@@ -9,7 +9,7 @@
 \usage{
 is_pacemaker(x)
 
-\method{print}{pacemaker}(x)
+\method{print}{pacemaker}(x, ...)
 
 \method{plot}{pacemaker}(
   x,
@@ -22,13 +22,13 @@ is_pacemaker(x)
 \arguments{
 \item{x}{A `pacemaker` object.}
 
+\item{...}{Unused; present for method consistency.}
+
 \item{which}{Which view to plot: `"curve"` (default) or `"gain"`.}
 
 \item{unit}{For the gain view, `"meter"` (default) or `"time"`.}
 
 \item{pace_sec}{Reference pace in sec/km; required when `unit = "time"`.}
-
-\item{...}{Unused; present for method consistency.}
 }
 \value{
 `is_pacemaker()` a logical; `print()`/`plot()` their input,

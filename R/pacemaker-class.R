@@ -37,7 +37,7 @@ is_pacemaker <- function(x) inherits(x, "pacemaker")
 
 #' @rdname pacemaker-class
 #' @export
-print.pacemaker <- function(x) {
+print.pacemaker <- function(x, ...) {
   cat("<pacemaker> pacing analysis\n")
   cat(sprintf("  Reference split : %s km\n", x$meta$relative %||% NA))
   cat(sprintf("  Runners used    : %s\n",    x$meta$n_runners %||% NA))
