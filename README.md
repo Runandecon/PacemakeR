@@ -89,6 +89,33 @@ grouping by runner, ordering splits, and differencing successive times
 into segment paces. This is the data-manipulation backbone everything
 downstream relies on.
 
+    #> S7    (0.2.1 -> 0.2.2) [CRAN]
+    #> dplyr (1.2.0 -> 1.2.1) [CRAN]
+    #> package 'S7' successfully unpacked and MD5 sums checked
+    #> package 'dplyr' successfully unpacked and MD5 sums checked
+    #> 
+    #> The downloaded binary packages are in
+    #>  C:\Users\Julia\AppData\Local\Temp\Rtmpq2qn1k\downloaded_packages
+    #> ── R CMD build ─────────────────────────────────────────────────────────────────
+    #>       ✔  checking for file 'C:\Users\Julia\AppData\Local\Temp\Rtmpq2qn1k\remotes9d8c54c488f\Runandecon-PacemakeR-39f7b9f/DESCRIPTION' (1s)
+    #>       ─  preparing 'PacemakeR':
+    #>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+    #>       ─  checking for LF line-endings in source and make files and shell scripts (855ms)
+    #>   ─  checking for empty or unneeded directories
+    #>        NB: this package now depends on R (>= 3.5.0)
+    #>      WARNING: Added dependency on R >= 3.5.0 because serialized objects in
+    #>      serialize/load version 3 cannot be read in older versions of R.
+    #>      File(s) containing such objects:
+    #>        'PacemakeR/data/London_Marathon_2026.rda'
+    #>      NB: this package now depends on R (>=        NB: this package now depends on R (>= 4.1.0)
+    #>      WARNING: Added dependency on R >= 4.1.0 because package code uses the
+    #>      pipe |> or function shorthand \(...) syntax added in R 4.1.0.
+    #>      File(s) using such syntax:
+    #>        'processing.R'
+    #> ─  building 'PacemakeR_0.1.0.tar.gz'
+    #>      
+    #> 
+
 ``` r
 data("London_Marathon_2026")
 head(London_Marathon_2026)
@@ -199,10 +226,12 @@ see is computed once and read off it on demand.
 
 ``` r
 london <- pacemaker(London_Marathon_2026, relative = 21.0975)
+class(london)
+#> [1] "pacemaker"
 ```
 
 ``` r
-pacemaker_print(london)
+print(london)
 #> <pacemaker> pacing analysis
 #>   Reference split : 21.0975 km
 #>   Runners used    : 6027
@@ -219,7 +248,7 @@ pacemaker_print(london)
 #>   35.0000    0.945 -0.024     1.004
 #>   40.0000    0.925 -0.020     1.013
 #>   42.1950    0.927  0.001     1.023
-pacemaker_plot(london)
+plot(london)
 ```
 
 <img src="man/figures/README-curve-plot-1.png" alt="" width="100%" />
@@ -241,13 +270,13 @@ how far ahead the negative-split strategy puts you, expressed in units a
 runner cares about.
 
 ``` r
-pacemaker_plot(london, "gain")                                   # advantage in metres
+plot(london, "gain")                                   # advantage in metres
 ```
 
 <img src="man/figures/README-gain-1.png" alt="" width="100%" />
 
 ``` r
-pacemaker_plot(london, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
+plot(london, "gain", unit = "time", pace_sec = 255)    # same advantage, in seconds
 ```
 
 <img src="man/figures/README-gain-time-1.png" alt="" width="100%" />

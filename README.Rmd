@@ -169,11 +169,12 @@ see is computed once and read off it on demand.
 
 ```{r curve}
 london <- pacemaker(London_Marathon_2026, relative = 21.0975)
+class(london)
 ```
 
 ```{r curve-plot}
-pacemaker_print(london)
-pacemaker_plot(london)
+print(london)
+plot(london)
 ```
 
 ### `plot(opt, "gain")` — price the payoff
@@ -191,11 +192,11 @@ difference between two index paths — the running total of how far ahead the
 negative-split strategy puts you, expressed in units a runner cares about.
 
 ```{r gain}
-pacemaker_plot(london, "gain")                                   # advantage in metres
+plot(london, "gain")                                   # advantage in metres
 ```
 
 ```{r gain-time}
-pacemaker_plot(london, "gain", unit = "time", pace_sec = 300)    # same advantage, in seconds
+plot(london, "gain", unit = "time", pace_sec = 255)    # same advantage, in seconds
 ```
 
 ## Course tools at a glance
