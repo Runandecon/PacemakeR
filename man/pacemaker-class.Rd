@@ -3,15 +3,15 @@
 \name{pacemaker-class}
 \alias{pacemaker-class}
 \alias{is_pacemaker}
-\alias{pacemaker_print}
-\alias{pacemaker_plot}
+\alias{print.pacemaker}
+\alias{plot.pacemaker}
 \title{Methods for `pacemaker` objects}
 \usage{
 is_pacemaker(x)
 
-pacemaker_print(x)
+\method{print}{pacemaker}(x)
 
-pacemaker_plot(
+\method{plot}{pacemaker}(
   x,
   which = c("curve", "gain"),
   unit = c("meter", "time"),
